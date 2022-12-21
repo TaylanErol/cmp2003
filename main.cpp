@@ -3,7 +3,8 @@
 int main() {
     dataSet myDataSet;
     myDataSet.import_and_save();
-    //konsola yazdirmak bi 6-7 dk suruyor ama kaydetmek hizli endiselenme
+    //konsola yazdirmak uzun suruyor
     //myDataSet.printSaved();
+    myDataSet.printTop10Users();
     return 0;
 }

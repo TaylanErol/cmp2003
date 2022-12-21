@@ -4,7 +4,7 @@ node::node(){
     link = nullptr;
 }
 
-void dataSet::import_file(){
+void dataSet::import_and_print(){
     // file pointer
     std::ifstream fin;
 
@@ -89,67 +89,84 @@ void dataSet::import_and_save(){
         getline(fin, getcell2, ',');
         getline(fin, getcell3, '\n');
 
-        //ONEMLI!!! calisiyor ama pointeri heape mi stackemi koyuyo emin degilim, node heapte ondan eminim ama :PP
+        //Black Magic
         node *row = new node;
-        row->userID = std::stoi(getcell1);
         row->itemID = std::stoi(getcell2);
         row->rating = std::stof(getcell3);
-        //int cloneIndex = dataMap.count(row->userID);
-        //if (cloneIndex <= 0) {
-            dataMap.insert(std::pair<int, node *>(row->userID, row));
-            //std::cout << row->userID;
-        //}else{node* nullFinder = dataMap.find(cloneIndex)->second;
-        //std::cout <<" a\n";}
-       /* {
-            node* nullFinder = dataMap.find(cloneIndex)->second;
-            node* prevNullFinder;
-            while (nullFinder != nullptr){
-            prevNullFinder = nullFinder;
-            nullFinder = nullFinder->link;
-            }
-            prevNullFinder->link = row;
-        }*/
-
-        /*int foundUser = searchUser(row->userID);
-        if(foundUser < 0)
-        mainDataPointerVector.push_back(row);
-        else{
-            mainDataPointerVector.at(foundUser)->link = row;
-        }*/
+        dataMap.insert(std::pair<int, node *>(std::stoi(getcell1), row));
 
     }
 
     //dosyayi kapatir
     fin.close();
-    std::cout << "USERID: "<< std::stof(getcell1) <<'\n';
-    std::cout << "ITEMID: "<< std::stof(getcell2) << '\n';
-    std::cout << "RATING: "<< std::stof(getcell3) << '\n';
-    std::cout << "-------------------" << '\n';
 }
 
 //konsola yazdirmak bi 6-7 dk suruyor
 void dataSet::printSaved(){
-    node* printptr;
 
-    /*for (int i = 0; i < mainDataPointerVector.size(); ++i) {
-        printptr = mainDataPointerVector.at(i);
-        std::cout << printptr->userID  << ","<< printptr -> itemID << ","<< printptr->rating << " ";
-        while(printptr->link != nullptr){
-            printptr = printptr->link;
-            std::cout << printptr->userID  << ","<< printptr -> itemID << ","<< printptr->rating << " ";
-        }
-        std::cout << "\n";
-    }*/
+    std::multimap <int,node*>::const_iterator it;
+    for (it = dataMap.begin(); it != dataMap.end(); ++it)
+    {
+        std::cout << "USERID: "<< it->first <<'\n';
+        std::cout << "ITEMID: "<< it->second->itemID << '\n';
+        std::cout << "RATING: "<< it->second->rating << '\n';
+        std::cout << "~~~~~~~~~~~~~~~~" << '\n';
+    }
 }
 
-//Kullanici arar bulamadiysa -1 verir
-int dataSet::searchUser(int user){
-    node* userFinder;
-    for (int i = 0; i < mainDataPointerVector.size(); ++i) {
-        userFinder = mainDataPointerVector.at(i);
-        if(userFinder->userID == user){
-            return i;
+void dataSet::printTop10Users() {
+    std::multimap <int,node*>::const_iterator it;
+    int topUserID[10] = {0,0,0,0,0,0,0,0,0,0};
+    int topUserCount[10] = {0,0,0,0,0,0,0,0,0,0};
+    int itPrev = -1;
+    for (it = dataMap.begin(); it != dataMap.end(); ++it)
+    {
+        if(it->first != itPrev) {
+            if(dataMap.count(it->first) > topUserCount[0]) {
+                topUserID[0] = it->first;
+                topUserCount[0] = dataMap.count(it->first);
+                selectionSort(topUserCount,topUserID, 10);
+            }
+        }
+
+        itPrev = it->first;
+    }
+    for (int i = 0; i < 10; ++i) {
+        std::cout << "[" << topUserID[i] << "," << topUserCount[i] << "]";
+    }
+    std::cout << "\n";
+}
+
+//TAKEN FROM GEEKS FOR GEEKS
+void swap(int *xp, int *yp)
+{
+    int temp = *xp;
+    *xp = *yp;
+    *yp = temp;
+}
+
+//TAKEN FROM GEEKS FOR GEEKS
+void selectionSort(int arr[], int arr2[], int n)
+{
+    int i, j, min_idx;
+
+    // One by one move boundary of
+    // unsorted subarray
+    for (i = 0; i < n-1; i++)
+    {
+
+        // Find the minimum element in
+        // unsorted array
+        min_idx = i;
+        for (j = i+1; j < n; j++)
+            if (arr[j] < arr[min_idx])
+                min_idx = j;
+
+        // Swap the found minimum element
+        // with the first element
+        if(min_idx!=i) {
+            swap(&arr[min_idx], &arr[i]);
+            swap(&arr2[min_idx], &arr2[i]);
         }
     }
-    return -1;
 }

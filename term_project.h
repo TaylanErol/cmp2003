@@ -5,9 +5,11 @@
 #include <map>
 //test
 
+void selectionSort(int arr[], int arr2[], int n);
+void swap(int *xp, int *yp);
+
 struct node
 {
-    int userID;
     int itemID;
     float rating;
     node *link;
@@ -16,14 +18,14 @@ struct node
 
 class dataSet{
 public:
-    void import_file();
+    void import_and_print();
     void import_and_save();
     void printSaved();
     void setFileName();
+    void printTop10Users();
     int getRowCount();
     int getMovieCount();
     int getUserCount();
-    int searchUser(int user);
     std::string getFileName();
     dataSet();
     //private al test icin konuldu
@@ -33,7 +35,5 @@ private:
     int movieCount;
     int rowCount;
     std::multimap<int,node*> dataMap;
-    std::vector<node*> mainDataPointerVector;
     std::string fileName;
-
 };
