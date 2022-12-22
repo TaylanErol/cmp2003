@@ -1,47 +1,6 @@
 #include "term_project.h"
 
-node::node(){
-    link = nullptr;
-}
 
-void dataSet::import_and_print(){
-    // file pointer
-    std::ifstream fin;
-
-    // !!!daha guzel bir cozum bulunabilir!!! dosyanin basindaki UserID,ItemID gibi gelen aciklamalardan kurtulmak icin
-    std::string firstCellPurge;
-
-    //1. 2. 3. hucredeki verileri icine alacak
-    std::string getcell1;
-    std::string getcell2;
-    std::string getcell3;
-    this->setFileName();
-    // verilen dosyayi ac
-    fin.open(fileName);
-
-    // dosya aciliyormu kontrol etmek icin
-    if(!fin.is_open()) std::cout << "ERROR: File couldn't be opened!" << '\n';
-
-    //dosyanin basindaki ilk satiri cope at
-    getline(fin,firstCellPurge,'\n');
-
-    //dosya sonuna kadar devam eder
-    while(fin.peek()!=EOF){
-
-        getline(fin,getcell1,',');
-        getline(fin,getcell2,',');
-        getline(fin,getcell3,'\n');
-
-        //printlemeden once stringi floata cevirir
-        std::cout << "USERID: "<< std::stof(getcell1) <<'\n';
-        std::cout << "ITEMID: "<< std::stof(getcell2) << '\n';
-        std::cout << "RATING: "<< std::stof(getcell3) << '\n';
-        std::cout << "-------------------" << '\n';
-    }
-
-    //dosyayi kapatir
-    fin.close();
-}
 
 void dataSet::setFileName(){
     std::cout << "Dosya adi girin: " << "\n";
@@ -69,9 +28,9 @@ void dataSet::import_and_save(){
     std::string firstCellPurge;
 
     //1. 2. 3. hucredeki verileri icine alacak
-    std::string getcell1;
-    std::string getcell2;
-    std::string getcell3;
+    std::string getUser;
+    std::string getMovie;
+    std::string getRating;
     this->setFileName();
     // verilen dosyayi ac
     fin.open(fileName);
@@ -85,18 +44,52 @@ void dataSet::import_and_save(){
     //dosya sonuna kadar devam eder
     while(fin.peek()!=EOF) {
 
-        getline(fin, getcell1, ',');
-        getline(fin, getcell2, ',');
-        getline(fin, getcell3, '\n');
+        getline(fin, getUser, ',');
+        getline(fin, getMovie, ',');
+        getline(fin, getRating, '\n');
+
 
         //Black Magic
-        node *row = new node;
-        row->itemID = std::stoi(getcell2);
-        row->rating = std::stof(getcell3);
-        dataMap.insert(std::pair<int, node *>(std::stoi(getcell1), row));
+        if(dataUserMap.count(std::stoi(getUser)) != 1 && dataMovieMap.count(std::stoi(getMovie)) != 1){
+
+            userNode *node;
+            node = new userNode;
+            std::vector<int> *movieVector;
+            movieVector = new std::vector<int>;
+            movieVector->push_back(std::stoi(getUser));
+            node->ratedMovies.push_back(std::stoi(getMovie));
+            node->ratings.push_back(std::stof(getRating));
+            dataUserMap.insert(std::pair<int,userNode*>(std::stoi(getUser),node));
+            dataMovieMap.insert(std::pair<int,std::vector<int>*>(std::stoi(getMovie),movieVector));
+
+        } else if(dataUserMap.count(std::stoi(getUser)) != 1 && dataMovieMap.count(std::stoi(getMovie)) == 1){
+
+            userNode *node;
+            node = new userNode;
+            node->ratedMovies.push_back(std::stoi(getMovie));
+            node->ratings.push_back(std::stof(getRating));
+            dataUserMap.insert(std::pair<int,userNode*>(std::stoi(getUser),node));
+            dataMovieMap.find(std::stoi(getMovie))->second->push_back(std::stoi(getUser));
+
+        } else if(dataUserMap.count(std::stoi(getUser)) == 1 && dataMovieMap.count(std::stoi(getMovie)) != 1){
+
+            std::vector<int> *movieVector;
+            movieVector = new std::vector<int>;
+            movieVector->push_back(std::stoi(getUser));
+            dataMovieMap.insert(std::pair<int,std::vector<int>*>(std::stoi(getMovie),movieVector));
+            dataUserMap.find(std::stoi(getUser))->second->ratedMovies.push_back(std::stoi(getMovie));
+            dataUserMap.find(std::stoi(getUser))->second->ratings.push_back(std::stof(getRating));
+
+        } else if (dataUserMap.count(std::stoi(getUser)) == 1 && dataMovieMap.count(std::stoi(getMovie)) == 1){
+
+            dataMovieMap.find(std::stoi(getMovie))->second->push_back(std::stoi(getUser));
+            dataUserMap.find(std::stoi(getUser))->second->ratedMovies.push_back(std::stoi(getMovie));
+            dataUserMap.find(std::stoi(getUser))->second->ratings.push_back(std::stof(getRating));
+
+        }
+
 
     }
-
     //dosyayi kapatir
     fin.close();
 }
@@ -104,31 +97,31 @@ void dataSet::import_and_save(){
 //konsola yazdirmak bi 6-7 dk suruyor
 void dataSet::printSaved(){
 
-    std::multimap <int,node*>::const_iterator it;
-    for (it = dataMap.begin(); it != dataMap.end(); ++it)
+    std::map <int,userNode*>::const_iterator it;
+    for (it = dataUserMap.begin(); it != dataUserMap.end(); ++it)
     {
         std::cout << "USERID: "<< it->first <<'\n';
-        std::cout << "ITEMID: "<< it->second->itemID << '\n';
-        std::cout << "RATING: "<< it->second->rating << '\n';
+        for (int i = 0; i < it->second->ratedMovies.size(); ++i) {
+            std::cout << "/////////////" << '\n';
+            std::cout << "ITEMID: "<< it->second->ratedMovies[i] << '\n';
+            std::cout << "RATING: "<< it->second->ratings[i] << '\n';
+            std::cout << "/////////////" << '\n';
+        }
         std::cout << "~~~~~~~~~~~~~~~~" << '\n';
     }
 }
-
 void dataSet::printTop10Users() {
-    std::multimap <int,node*>::const_iterator it;
+    std::map <int,userNode*>::const_iterator it;
     int topUserID[10] = {0,0,0,0,0,0,0,0,0,0};
     int topUserCount[10] = {0,0,0,0,0,0,0,0,0,0};
-    int itPrev = -1;
-    for (it = dataMap.begin(); it != dataMap.end(); ++it)
+
+    for (it = dataUserMap.begin(); it != dataUserMap.end(); ++it)
     {
-        if(it->first != itPrev) {
-            if(dataMap.count(it->first) > topUserCount[0]) {
+            if(it->second->ratedMovies.size() > topUserCount[0]) {
                 topUserID[0] = it->first;
-                topUserCount[0] = dataMap.count(it->first);
+                topUserCount[0] = it->second->ratedMovies.size();
                 selectionSort(topUserCount,topUserID, 10);
             }
-        }
-        itPrev = it->first;
     }
     for (int i = 0; i < 10; ++i) {
         std::cout << "[" << topUserID[i] << "," << topUserCount[i] << "]";
@@ -137,23 +130,16 @@ void dataSet::printTop10Users() {
 }
 
 void dataSet::printTop10Movies(){
-    std::multimap <int,node*>::const_iterator it;
-    std::multimap <int,node*>::const_iterator it2;
+    std::map <int,std::vector<int>*>::const_iterator it;
     int topMovieID[10] = {0,0,0,0,0,0,0,0,0,0};
     int topMovieCount[10] = {0,0,0,0,0,0,0,0,0,0};
-    for (it = dataMap.begin(); it != dataMap.end(); ++it)
+
+    for (it = dataMovieMap.begin(); it != dataMovieMap.end(); ++it)
     {
-        int count = 0;
-        for (it2 = dataMap.begin(); it2 != dataMap.end(); ++it2)
-        {
-            if(it2->second->itemID == it->second->itemID) {
-                count++;
-            }
-                if(topMovieCount[0] < count){
-                    topMovieID[0] = it->second->itemID;
-                    topMovieCount[0] = count;
-                    selectionSort(topMovieCount, topMovieID, 10);
-            }
+        if(it->second->size() > topMovieCount[0]) {
+            topMovieID[0] = it->first;
+            topMovieCount[0] = it->second->size();
+            selectionSort(topMovieCount,topMovieID, 10);
         }
     }
     for (int i = 0; i < 10; ++i) {
@@ -161,6 +147,22 @@ void dataSet::printTop10Movies(){
     }
     std::cout << "\n";
 }
+
+int dataSet::getUserCount() {
+    return dataUserMap.size();
+}
+
+int dataSet::getMovieCount() {
+    return dataMovieMap.size();
+}
+//WIP
+/*void dataSet::calcSimilarityIndex() {
+    std::map <int,userNode*>::const_iterator it;
+    for (it = dataUserMap.begin(); it != dataUserMap.end(); ++it)
+    {
+        cosine_similarity(it->second->ratedMovies,it->second->ratings,it->second->ratedMovies.size());
+    }
+}*/
 
 //TAKEN FROM GEEKS FOR GEEKS
 void swap(int *xp, int *yp)
@@ -194,4 +196,16 @@ void selectionSort(int arr[], int arr2[], int n)
             swap(&arr2[min_idx], &arr2[i]);
         }
     }
+}
+
+//TAKEN FROM STACK OVERFLOW USER a_pradhan
+double cosine_similarity(double *A, double *B, unsigned int Vector_Length)
+{
+    double dot = 0.0, denom_a = 0.0, denom_b = 0.0 ;
+    for(unsigned int i = 0u; i < Vector_Length; ++i) {
+        dot += A[i] * B[i] ;
+        denom_a += A[i] * A[i] ;
+        denom_b += B[i] * B[i] ;
+    }
+    return dot / (sqrt(denom_a) * sqrt(denom_b)) ;
 }

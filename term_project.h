@@ -3,30 +3,28 @@
 #include <string>
 #include <vector>
 #include <map>
-//test
-
+#include <numeric>
+#include <cmath>
+double cosine_similarity(double *A, double *B, unsigned int Vector_Length);
 void selectionSort(int arr[], int arr2[], int n);
 void swap(int *xp, int *yp);
-
-struct node
+struct userNode
 {
-    int itemID;
-    float rating;
-    node *link;
-    node();
+    std::vector<int> ratedMovies;
+    std::vector<float> ratings;
+    double similarityIndex;
 };
 
 class dataSet{
 public:
-    void import_and_print();
     void import_and_save();
     void printSaved();
     void setFileName();
     void printTop10Users();
     void printTop10Movies();
-    int getRowCount();
     int getMovieCount();
     int getUserCount();
+    void calcSimilarityIndex();
     std::string getFileName();
     dataSet();
     //private al test icin konuldu
@@ -35,8 +33,7 @@ private:
     int userCount;
     int movieCount;
     int rowCount;
-    std::multimap<int,node*> dataMap;
-    std::map<int,node*> dataMovieMap;
-    std::map<int,node*> dataUserMap;
+    std::map<int,std::vector<int>*> dataMovieMap;
+    std::map<int,userNode*> dataUserMap;
     std::string fileName;
 };
