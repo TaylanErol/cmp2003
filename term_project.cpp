@@ -18,6 +18,48 @@ dataSet::dataSet() {
     fileName = "";
 
 }
+void dataSet::import_test(){
+    //bu fonksiyon import file ile benzerlik gostermektedir ancak icindekileri yazdirmak yerine kaydeder
+    // file pointer
+    std::ifstream fin;
+    // !!!daha guzel bir cozum bulunabilir!!! dosyanin basindaki UserID,ItemID gibi gelen aciklamalardan kurtulmak icin
+    std::string firstCellPurge;
+
+    //1. 2. 3. hucredeki verileri icine alacak
+    std::string getID;
+    std::string getUser;
+    std::string getMovie;
+    this->setFileName();
+    // verilen dosyayi ac
+    fin.open(fileName);
+
+    // dosya aciliyormu kontrol etmek icin
+    if(!fin.is_open()) std::cout << "ERROR: File couldn't be opened!" << '\n';
+
+    //dosyanin basindaki ilk satiri cope at
+    getline(fin,firstCellPurge,'\n');
+
+    //dosya sonuna kadar devam eder
+    while(fin.peek()!=EOF) {
+
+        getline(fin, getID, ',');
+        int fileID = std::stoi(getID);
+        getline(fin, getUser, ',');
+        int fileUser = std::stoi(getUser);
+        getline(fin, getMovie, '\n');
+        int fileMovie = std::stoi(getMovie);
+
+    int similarCandidate = dataMovieMap.find(fileMovie)->second->at(0);
+    dataUserMap.find(similarCandidate);
+
+
+
+
+    }
+    //dosyayi kapatir
+    fin.close();
+}
+
 
 //kaydetmek dusundugumden hizli calisiyor mutluyum :))
 void dataSet::import_and_save(){
@@ -148,21 +190,22 @@ void dataSet::printTop10Movies(){
     std::cout << "\n";
 }
 
-int dataSet::getUserCount() {
+int dataSet::getUniqueUserCount() {
     return dataUserMap.size();
 }
 
-int dataSet::getMovieCount() {
+int dataSet::getUniqueMovieCount() {
     return dataMovieMap.size();
 }
 //WIP
-/*void dataSet::calcSimilarityIndex() {
+void dataSet::calcSimilarityIndex() {
     std::map <int,userNode*>::const_iterator it;
     for (it = dataUserMap.begin(); it != dataUserMap.end(); ++it)
     {
-        cosine_similarity(it->second->ratedMovies,it->second->ratings,it->second->ratedMovies.size());
+        it->second->similarityIndex = cosine_similarity(it->second->ratedMovies,it->second->ratings,it->second->ratedMovies.size());
+        //std::cout << "USERID: "<< it->first << " SimilarityWeight: "<< it->second->similarityIndex << "\n";
     }
-}*/
+}
 
 //TAKEN FROM GEEKS FOR GEEKS
 void swap(int *xp, int *yp)
@@ -199,13 +242,13 @@ void selectionSort(int arr[], int arr2[], int n)
 }
 
 //TAKEN FROM STACK OVERFLOW USER a_pradhan
-double cosine_similarity(double *A, double *B, unsigned int Vector_Length)
+double cosine_similarity(std::vector<int> ratedMovies, std::vector<float> ratings, unsigned int Vector_Length)
 {
     double dot = 0.0, denom_a = 0.0, denom_b = 0.0 ;
     for(unsigned int i = 0u; i < Vector_Length; ++i) {
-        dot += A[i] * B[i] ;
-        denom_a += A[i] * A[i] ;
-        denom_b += B[i] * B[i] ;
+        dot += ratedMovies[i] * ratings[i] ;
+        denom_a += ratedMovies[i] * ratedMovies[i] ;
+        denom_b += ratings[i] * ratings[i] ;
     }
     return dot / (sqrt(denom_a) * sqrt(denom_b)) ;
 }
