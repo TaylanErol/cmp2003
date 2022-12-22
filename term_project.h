@@ -23,6 +23,7 @@ public:
     void printSaved();
     void setFileName();
     void printTop10Users();
+    void printTop10Movies();
     int getRowCount();
     int getMovieCount();
     int getUserCount();
@@ -35,5 +36,7 @@ private:
     int movieCount;
     int rowCount;
     std::multimap<int,node*> dataMap;
+    std::map<int,node*> dataMovieMap;
+    std::map<int,node*> dataUserMap;
     std::string fileName;
 };

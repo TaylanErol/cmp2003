@@ -6,5 +6,6 @@ int main() {
     //konsola yazdirmak uzun suruyor
     //myDataSet.printSaved();
     myDataSet.printTop10Users();
+    myDataSet.printTop10Movies();
     return 0;
 }

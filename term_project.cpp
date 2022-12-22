@@ -128,11 +128,36 @@ void dataSet::printTop10Users() {
                 selectionSort(topUserCount,topUserID, 10);
             }
         }
-
         itPrev = it->first;
     }
     for (int i = 0; i < 10; ++i) {
         std::cout << "[" << topUserID[i] << "," << topUserCount[i] << "]";
+    }
+    std::cout << "\n";
+}
+
+void dataSet::printTop10Movies(){
+    std::multimap <int,node*>::const_iterator it;
+    std::multimap <int,node*>::const_iterator it2;
+    int topMovieID[10] = {0,0,0,0,0,0,0,0,0,0};
+    int topMovieCount[10] = {0,0,0,0,0,0,0,0,0,0};
+    for (it = dataMap.begin(); it != dataMap.end(); ++it)
+    {
+        int count = 0;
+        for (it2 = dataMap.begin(); it2 != dataMap.end(); ++it2)
+        {
+            if(it2->second->itemID == it->second->itemID) {
+                count++;
+            }
+                if(topMovieCount[0] < count){
+                    topMovieID[0] = it->second->itemID;
+                    topMovieCount[0] = count;
+                    selectionSort(topMovieCount, topMovieID, 10);
+            }
+        }
+    }
+    for (int i = 0; i < 10; ++i) {
+        std::cout << "[" << topMovieID[i] << "," << topMovieCount[i] << "]";
     }
     std::cout << "\n";
 }
