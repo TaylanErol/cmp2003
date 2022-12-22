@@ -48,9 +48,27 @@ void dataSet::import_test(){
         int fileUser = std::stoi(getUser);
         getline(fin, getMovie, '\n');
         int fileMovie = std::stoi(getMovie);
+        std::map <int,float>::const_iterator it2;
+        std::map <int,float>::const_iterator itbegin = dataUserMap.find(fileUser)->second->ratedMoviesMap.begin();
+        std::map <int,float>::const_iterator itend = dataUserMap.find(fileUser)->second->ratedMoviesMap.end();
+        std::map<int, float> fileUserMapPtr  = dataUserMap.find(fileUser)->second->ratedMoviesMap;
+        std::vector<float> fileMovieRatings;
+        std::vector<float> candidateMovieRatings;
+
+        int vectorSize = dataMovieMap.find(fileMovie)->second->size();
+        for (int i = 0; i < vectorSize; ++i) {
+            for (it2 = itbegin; it2 != itend; ++it2) {
+                if (dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.count(it2->first) == 1) {
+                    candidateMovieRatings.push_back(dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.find(it2->first)->second);
+                    std::cout << "ID: "<< dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->first << " candidaterating: " <<dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.find(it2->first)->second << "\n";
+                    fileMovieRatings.push_back(it2->second);
+                    std::cout << "fileMovieRatings: "<<it2->second << "\n";
+                }
+            }
+        }
 
     int similarCandidate = dataMovieMap.find(fileMovie)->second->at(0);
-    dataUserMap.find(similarCandidate);
+    dataUserMap.find(similarCandidate)->second->ratedMoviesMap.at(0);
 
 
 
@@ -99,8 +117,7 @@ void dataSet::import_and_save(){
             std::vector<int> *movieVector;
             movieVector = new std::vector<int>;
             movieVector->push_back(std::stoi(getUser));
-            node->ratedMovies.push_back(std::stoi(getMovie));
-            node->ratings.push_back(std::stof(getRating));
+            node->ratedMoviesMap.insert(std::pair<int,float>(std::stoi(getMovie),std::stof(getRating)));
             dataUserMap.insert(std::pair<int,userNode*>(std::stoi(getUser),node));
             dataMovieMap.insert(std::pair<int,std::vector<int>*>(std::stoi(getMovie),movieVector));
 
@@ -108,8 +125,7 @@ void dataSet::import_and_save(){
 
             userNode *node;
             node = new userNode;
-            node->ratedMovies.push_back(std::stoi(getMovie));
-            node->ratings.push_back(std::stof(getRating));
+            node->ratedMoviesMap.insert(std::pair<int,float>(std::stoi(getMovie),std::stof(getRating)));
             dataUserMap.insert(std::pair<int,userNode*>(std::stoi(getUser),node));
             dataMovieMap.find(std::stoi(getMovie))->second->push_back(std::stoi(getUser));
 
@@ -119,14 +135,12 @@ void dataSet::import_and_save(){
             movieVector = new std::vector<int>;
             movieVector->push_back(std::stoi(getUser));
             dataMovieMap.insert(std::pair<int,std::vector<int>*>(std::stoi(getMovie),movieVector));
-            dataUserMap.find(std::stoi(getUser))->second->ratedMovies.push_back(std::stoi(getMovie));
-            dataUserMap.find(std::stoi(getUser))->second->ratings.push_back(std::stof(getRating));
+            dataUserMap.find(std::stoi(getUser))->second->ratedMoviesMap.insert(std::pair<int,float>(std::stoi(getMovie),std::stof(getRating)));
 
         } else if (dataUserMap.count(std::stoi(getUser)) == 1 && dataMovieMap.count(std::stoi(getMovie)) == 1){
 
             dataMovieMap.find(std::stoi(getMovie))->second->push_back(std::stoi(getUser));
-            dataUserMap.find(std::stoi(getUser))->second->ratedMovies.push_back(std::stoi(getMovie));
-            dataUserMap.find(std::stoi(getUser))->second->ratings.push_back(std::stof(getRating));
+            dataUserMap.find(std::stoi(getUser))->second->ratedMoviesMap.insert(std::pair<int,float>(std::stoi(getMovie),std::stof(getRating)));
 
         }
 
@@ -138,15 +152,16 @@ void dataSet::import_and_save(){
 
 //konsola yazdirmak bi 6-7 dk suruyor
 void dataSet::printSaved(){
-
+    std::cout << "~~~~~~~~~~~~~~~~" << '\n';
     std::map <int,userNode*>::const_iterator it;
     for (it = dataUserMap.begin(); it != dataUserMap.end(); ++it)
     {
         std::cout << "USERID: "<< it->first <<'\n';
-        for (int i = 0; i < it->second->ratedMovies.size(); ++i) {
+        std::map <int,float>::const_iterator it2;
+        for (it2 = it->second->ratedMoviesMap.begin(); it2 != it->second->ratedMoviesMap.end(); ++it2) {
             std::cout << "/////////////" << '\n';
-            std::cout << "ITEMID: "<< it->second->ratedMovies[i] << '\n';
-            std::cout << "RATING: "<< it->second->ratings[i] << '\n';
+            std::cout << "ITEMID: "<< it2->first << '\n';
+            std::cout << "RATING: "<< it2->second << '\n';
             std::cout << "/////////////" << '\n';
         }
         std::cout << "~~~~~~~~~~~~~~~~" << '\n';
@@ -159,9 +174,9 @@ void dataSet::printTop10Users() {
 
     for (it = dataUserMap.begin(); it != dataUserMap.end(); ++it)
     {
-            if(it->second->ratedMovies.size() > topUserCount[0]) {
+            if(it->second->ratedMoviesMap.size() > topUserCount[0]) {
                 topUserID[0] = it->first;
-                topUserCount[0] = it->second->ratedMovies.size();
+                topUserCount[0] = it->second->ratedMoviesMap.size();
                 selectionSort(topUserCount,topUserID, 10);
             }
     }
@@ -198,14 +213,14 @@ int dataSet::getUniqueMovieCount() {
     return dataMovieMap.size();
 }
 //WIP
-void dataSet::calcSimilarityIndex() {
+/*void dataSet::calcSimilarityIndex() {
     std::map <int,userNode*>::const_iterator it;
     for (it = dataUserMap.begin(); it != dataUserMap.end(); ++it)
     {
         it->second->similarityIndex = cosine_similarity(it->second->ratedMovies,it->second->ratings,it->second->ratedMovies.size());
         //std::cout << "USERID: "<< it->first << " SimilarityWeight: "<< it->second->similarityIndex << "\n";
     }
-}
+}*/
 
 //TAKEN FROM GEEKS FOR GEEKS
 void swap(int *xp, int *yp)
@@ -242,13 +257,13 @@ void selectionSort(int arr[], int arr2[], int n)
 }
 
 //TAKEN FROM STACK OVERFLOW USER a_pradhan
-double cosine_similarity(std::vector<int> ratedMovies, std::vector<float> ratings, unsigned int Vector_Length)
+double cosine_similarity(std::vector<float> ratingA, std::vector<float> ratingB, unsigned int Vector_Length)
 {
     double dot = 0.0, denom_a = 0.0, denom_b = 0.0 ;
     for(unsigned int i = 0u; i < Vector_Length; ++i) {
-        dot += ratedMovies[i] * ratings[i] ;
-        denom_a += ratedMovies[i] * ratedMovies[i] ;
-        denom_b += ratings[i] * ratings[i] ;
+        dot += ratingA[i] * ratingB[i] ;
+        denom_a += ratingA[i] * ratingA[i] ;
+        denom_b += ratingB[i] * ratingB[i] ;
     }
     return dot / (sqrt(denom_a) * sqrt(denom_b)) ;
 }

@@ -11,8 +11,6 @@ void swap(int *xp, int *yp);
 struct userNode
 {
     std::map<int,float> ratedMoviesMap;
-    std::vector<int> ratedMovies;
-    std::vector<float> ratings;
     double similarityIndex;
 };
 
