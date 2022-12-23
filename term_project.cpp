@@ -25,7 +25,7 @@ void dataSet::exportToFile() {
     fout.open("submission.csv");
     fout << "ID,Predicted\n";
     for (int i = 0; i < exportData.size() ; ++i) {
-        fout << exportData[i].first << "," << exportData[i].second;
+        fout << exportData[i].first << "," << exportData[i].second << "\n";
     }
 
 }
