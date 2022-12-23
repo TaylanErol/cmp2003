@@ -18,6 +18,18 @@ dataSet::dataSet() {
     fileName = "";
 
 }
+
+void dataSet::exportToFile() {
+
+    std::ofstream fout;
+    fout.open("submission.csv");
+    fout << "ID,Predicted\n";
+    for (int i = 0; i < exportData.size() ; ++i) {
+        fout << exportData[i].first << "," << exportData[i].second;
+    }
+
+}
+
 void dataSet::import_test(){
     //bu fonksiyon import file ile benzerlik gostermektedir ancak icindekileri yazdirmak yerine kaydeder
     // file pointer
@@ -84,19 +96,20 @@ void dataSet::import_test(){
         int count = 0;
         float candidateRatingAddition = 0.0;
         for (int i = vscsAndCandidateID.size() - 1; i > 0 && count < 3; i--) {
-            /*if (std::isnan(vscsAndCandidateID[i].first) == false) {*/
+            if (std::isnan(vscsAndCandidateID[i].first) == false) {
                 // "first" and "second" are used to access
                 // 1st and 2nd element of pair respectively
                 float candidateRating = dataUserMap.find(vscsAndCandidateID[i].second)->second->ratedMoviesMap.find(fileMovie)->second;
-                std::cout << vscsAndCandidateID[i].first << " "
-                          << vscsAndCandidateID[i].second << std::endl;
+                /*std::cout << vscsAndCandidateID[i].first << " "<< vscsAndCandidateID[i].second << std::endl;*/
                 candidateRatingAddition += candidateRating;
                 count++;
-            /*}*/
+            }
         }
-        std::cout << "Recommended Rating: " << (double)candidateRatingAddition/count << "\n";
+        double rating = (double)candidateRatingAddition/count;
+        exportData.emplace_back(fileID,rating);
 
-        std::cout << "---------------Finish File User ID: " << dataUserMap.find(fileUser)->first << "\n";
+        /*std::cout << "Recommended Rating: " << rating << "\n";
+        std::cout << "////////" << getID <<"---------------Finish File User ID: " << dataUserMap.find(fileUser)->first << "\n";*/
 
     }
     //dosyayi kapatir

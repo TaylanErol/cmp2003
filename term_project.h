@@ -18,6 +18,7 @@ struct userNode
 
 class dataSet{
 public:
+    void exportToFile();
     void import_test();
     void import_and_save();
     void printSaved();
@@ -37,5 +38,6 @@ private:
     int rowCount;
     std::map<int,std::vector<int>*> dataMovieMap;
     std::map<int,userNode*> dataUserMap;
+    std::vector<std::pair<int,float>> exportData;
     std::string fileName;
 };
