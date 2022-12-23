@@ -53,28 +53,50 @@ void dataSet::import_test(){
         std::map <int,float>::const_iterator it2end = dataUserMap.find(fileUser)->second->ratedMoviesMap.end();
         std::map<int, float> fileUserMapPtr  = dataUserMap.find(fileUser)->second->ratedMoviesMap;
         int vectorSize = dataMovieMap.find(fileMovie)->second->size();
+        std::vector<std::pair<double,int>> vscsAndCandidateID;
         for (int i = 0; i < vectorSize; ++i) {
             std::vector<float> fileMovieRatings;
             std::vector<float> candidateMovieRatings;
             std::map <int,float>::const_iterator it;
             for (it2 = it2begin; it2 != it2end; ++it2) {
                     if (dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.count(it2->first) == 1){
-                        candidateMovieRatings.push_back(dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.find(it2->first)->second);
-/*                        std::cout << "Candidate ID: " << dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->first
+                        /*std::cout << "Candidate ID: " << dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->first
                                   << " CandidateMovie: " << dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.find(it2->first)->first
                                   << " Candidate Rating: " << dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.find(it2->first)->second << "\n";
                         std::cout << "File User ID: " << dataUserMap.find(fileUser)->first
                                   << " File User Movie : " << it2->first
                                   << " File User Rating: " << it2->second << "\n";*/
                         fileMovieRatings.push_back(it2->second);
+                        candidateMovieRatings.push_back(dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.find(it2->first)->second);
                 }
             }
-            double cossim = cosine_similarity(fileMovieRatings,candidateMovieRatings, fileMovieRatings.size());
-            std::cout << "File User ID: " << dataUserMap.find(fileUser)->first << ", "
-                      << "Candidate ID: " << dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->first << ", Similarity: " << cossim
-                      << " Vector Size: " << fileMovieRatings.size() << ", vs*cs: " << cossim*cossim* sqrt(sqrt(sqrt(fileMovieRatings.size()))) << "\n";
+            if(fileMovieRatings.size() != 0) {
+                double cossim = cosine_similarity(fileMovieRatings, candidateMovieRatings, fileMovieRatings.size());
+                double vscs = cossim * ((double) fileMovieRatings.size() / (double) dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.size());
+                int candidateID = dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->first;
+                /*std::cout << "File User ID: " << dataUserMap.find(fileUser)->first << ", "
+                          << "Candidate ID: " << candidateID << ", Similarity: " << cossim
+                          << " Vector Size: " << fileMovieRatings.size() << ", vs*cs: " << vscs << "\n";*/
+                vscsAndCandidateID.emplace_back(vscs,candidateID); //Compiler emplace_back onerdi neden bilmiyorum ama daha hos duruyo :P
+            }
         }
-        std::cout << "Finish File User ID: " << dataUserMap.find(fileUser)->first << "\n";
+        std::sort(vscsAndCandidateID.begin(), vscsAndCandidateID.end());
+        int count = 0;
+        float candidateRatingAddition = 0.0;
+        for (int i = vscsAndCandidateID.size() - 1; i > 0 && count < 3; i--) {
+            /*if (std::isnan(vscsAndCandidateID[i].first) == false) {*/
+                // "first" and "second" are used to access
+                // 1st and 2nd element of pair respectively
+                float candidateRating = dataUserMap.find(vscsAndCandidateID[i].second)->second->ratedMoviesMap.find(fileMovie)->second;
+                std::cout << vscsAndCandidateID[i].first << " "
+                          << vscsAndCandidateID[i].second << std::endl;
+                candidateRatingAddition += candidateRating;
+                count++;
+            /*}*/
+        }
+        std::cout << "Recommended Rating: " << (double)candidateRatingAddition/count << "\n";
+
+        std::cout << "---------------Finish File User ID: " << dataUserMap.find(fileUser)->first << "\n";
 
     }
     //dosyayi kapatir

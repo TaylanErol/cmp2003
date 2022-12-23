@@ -5,6 +5,7 @@
 #include <map>
 #include <numeric>
 #include <cmath>
+#include <algorithm>
 
 double cosine_similarity(std::vector<float> ratingA, std::vector<float> ratingB, int vectorSize);
 void selectionSort(int arr[], int arr2[], int n);
