@@ -49,29 +49,32 @@ void dataSet::import_test(){
         getline(fin, getMovie, '\n');
         int fileMovie = std::stoi(getMovie);
         std::map <int,float>::const_iterator it2;
-        std::map <int,float>::const_iterator itbegin = dataUserMap.find(fileUser)->second->ratedMoviesMap.begin();
-        std::map <int,float>::const_iterator itend = dataUserMap.find(fileUser)->second->ratedMoviesMap.end();
+        std::map <int,float>::const_iterator it2begin = dataUserMap.find(fileUser)->second->ratedMoviesMap.begin();
+        std::map <int,float>::const_iterator it2end = dataUserMap.find(fileUser)->second->ratedMoviesMap.end();
         std::map<int, float> fileUserMapPtr  = dataUserMap.find(fileUser)->second->ratedMoviesMap;
-        std::vector<float> fileMovieRatings;
-        std::vector<float> candidateMovieRatings;
-
         int vectorSize = dataMovieMap.find(fileMovie)->second->size();
         for (int i = 0; i < vectorSize; ++i) {
-            for (it2 = itbegin; it2 != itend; ++it2) {
-                if (dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.count(it2->first) == 1) {
-                    candidateMovieRatings.push_back(dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.find(it2->first)->second);
-                    std::cout << "ID: "<< dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->first << " candidaterating: " <<dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.find(it2->first)->second << "\n";
-                    fileMovieRatings.push_back(it2->second);
-                    std::cout << "fileMovieRatings: "<<it2->second << "\n";
+            std::vector<float> fileMovieRatings;
+            std::vector<float> candidateMovieRatings;
+            std::map <int,float>::const_iterator it;
+            for (it2 = it2begin; it2 != it2end; ++it2) {
+                    if (dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.count(it2->first) == 1){
+                        candidateMovieRatings.push_back(dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.find(it2->first)->second);
+/*                        std::cout << "Candidate ID: " << dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->first
+                                  << " CandidateMovie: " << dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.find(it2->first)->first
+                                  << " Candidate Rating: " << dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.find(it2->first)->second << "\n";
+                        std::cout << "File User ID: " << dataUserMap.find(fileUser)->first
+                                  << " File User Movie : " << it2->first
+                                  << " File User Rating: " << it2->second << "\n";*/
+                        fileMovieRatings.push_back(it2->second);
                 }
             }
+            double cossim = cosine_similarity(fileMovieRatings,candidateMovieRatings, fileMovieRatings.size());
+            std::cout << "File User ID: " << dataUserMap.find(fileUser)->first << ", "
+                      << "Candidate ID: " << dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->first << ", Similarity: " << cossim
+                      << " Vector Size: " << fileMovieRatings.size() << ", vs*cs: " << cossim*cossim* sqrt(sqrt(sqrt(fileMovieRatings.size()))) << "\n";
         }
-
-    int similarCandidate = dataMovieMap.find(fileMovie)->second->at(0);
-    dataUserMap.find(similarCandidate)->second->ratedMoviesMap.at(0);
-
-
-
+        std::cout << "Finish File User ID: " << dataUserMap.find(fileUser)->first << "\n";
 
     }
     //dosyayi kapatir
@@ -256,14 +259,15 @@ void selectionSort(int arr[], int arr2[], int n)
     }
 }
 
-//TAKEN FROM STACK OVERFLOW USER a_pradhan
-double cosine_similarity(std::vector<float> ratingA, std::vector<float> ratingB, unsigned int Vector_Length)
+double cosine_similarity(std::vector<float> ratingA, std::vector<float> ratingB, int vectorSize)
 {
-    double dot = 0.0, denom_a = 0.0, denom_b = 0.0 ;
-    for(unsigned int i = 0u; i < Vector_Length; ++i) {
-        dot += ratingA[i] * ratingB[i] ;
-        denom_a += ratingA[i] * ratingA[i] ;
-        denom_b += ratingB[i] * ratingB[i] ;
+    double dotp = 0.0;
+    double bolum_a = 0.0;
+    double bolum_b = 0.0 ;
+    for(int i = 0; i < vectorSize; ++i) {
+        dotp += ratingA[i] * ratingB[i] ;
+        bolum_a += ratingA[i] * ratingA[i] ;
+        bolum_b += ratingB[i] * ratingB[i] ;
     }
-    return dot / (sqrt(denom_a) * sqrt(denom_b)) ;
+    return dotp / (sqrt(bolum_a) * sqrt(bolum_b)) ;
 }
