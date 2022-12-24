@@ -2,18 +2,16 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include <map>
 #include <numeric>
 #include <cmath>
-#include <algorithm>
+#include <unordered_map>
 
-//double cosine_similarity(std::vector<float> ratingA, std::vector<float> ratingB, int vectorSize);
-double cosine_similarity(std::vector<std::pair<float,float>> rating, int vectorSize);
+double cosine_similarity(const std::vector<std::pair<float, float>> &rating);
 void selectionSort(int arr[], int arr2[], int n);
 void swap(int *xp, int *yp);
 struct userNode
 {
-    std::map<int,float> ratedMoviesMap;
+    std::unordered_map<int,float> ratedMoviesMap;
     double avgRating;
 };
 
@@ -30,17 +28,10 @@ public:
     void printTop10Movies();
     int getUniqueMovieCount();
     int getUniqueUserCount();
-    void calcSimilarityIndex();
-    std::string getFileName();
     dataSet();
-    //private al test icin konuldu
-
 private:
-    int userCount;
-    int movieCount;
-    int rowCount;
-    std::map<int,std::vector<int>*> dataMovieMap;
-    std::map<int,userNode*> dataUserMap;
+    std::unordered_map<int,std::vector<int>*> dataMovieMap;
+    std::unordered_map<int,userNode*> dataUserMap;
     std::vector<std::pair<int,float>> exportData;
     std::string fileName;
 };
