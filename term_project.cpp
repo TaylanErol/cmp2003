@@ -67,8 +67,9 @@ void dataSet::import_test(){
         int vectorSize = dataMovieMap.find(fileMovie)->second->size();
         std::vector<std::pair<double,int>> vscsAndCandidateID;
         for (int i = 0; i < vectorSize; ++i) {
-            std::vector<float> fileMovieRatings;
-            std::vector<float> candidateMovieRatings;
+            /*std::vector<float> fileMovieRatings;
+            std::vector<float> candidateMovieRatings;*/
+            std::vector<std::pair<float,float>> file2CandidateRating;
             std::map <int,float>::const_iterator it;
             for (it2 = it2begin; it2 != it2end; ++it2) {
                     if (dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.count(it2->first) == 1){
@@ -78,13 +79,15 @@ void dataSet::import_test(){
                         std::cout << "File User ID: " << dataUserMap.find(fileUser)->first
                                   << " File User Movie : " << it2->first
                                   << " File User Rating: " << it2->second << "\n";*/
-                        fileMovieRatings.push_back(it2->second);
-                        candidateMovieRatings.push_back(dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.find(it2->first)->second);
+                        /*fileMovieRatings.push_back(it2->second);
+                        candidateMovieRatings.push_back(dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.find(it2->first)->second);*/
+                        file2CandidateRating.emplace_back(it2->second,dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.find(it2->first)->second);
+
                 }
             }
-            if(fileMovieRatings.size() != 0) {
-                double cossim = cosine_similarity(fileMovieRatings, candidateMovieRatings, fileMovieRatings.size());
-                double vscs = cossim * ((double) fileMovieRatings.size() / (double) dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.size());
+            if(file2CandidateRating.size() != 0) {
+                double cossim = cosine_similarity(file2CandidateRating, file2CandidateRating.size());
+                double vscs = cossim; //* ((double) fileMovieRatings.size() / (double) dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.size());
                 int candidateID = dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->first;
                 /*std::cout << "File User ID: " << dataUserMap.find(fileUser)->first << ", "
                           << "Candidate ID: " << candidateID << ", Similarity: " << cossim
@@ -95,12 +98,12 @@ void dataSet::import_test(){
         std::sort(vscsAndCandidateID.begin(), vscsAndCandidateID.end());
         int count = 0;
         float candidateRatingAddition = 0.0;
-        for (int i = vscsAndCandidateID.size() - 1; i > 0 && count < 3; i--) {
+        for (int i = vscsAndCandidateID.size() - 1; i >= 0 && count < 10; i--) {
             if (std::isnan(vscsAndCandidateID[i].first) == false) {
                 // "first" and "second" are used to access
                 // 1st and 2nd element of pair respectively
                 float candidateRating = dataUserMap.find(vscsAndCandidateID[i].second)->second->ratedMoviesMap.find(fileMovie)->second;
-                /*std::cout << vscsAndCandidateID[i].first << " "<< vscsAndCandidateID[i].second << std::endl;*/
+                std::cout << vscsAndCandidateID[i].first << " "<< vscsAndCandidateID[i].second << " r: " << dataUserMap.find(vscsAndCandidateID[i].second)->second->ratedMoviesMap.find(fileMovie)->second << std::endl;
                 candidateRatingAddition += candidateRating;
                 count++;
             }
@@ -108,8 +111,8 @@ void dataSet::import_test(){
         double rating = (double)candidateRatingAddition/count;
         exportData.emplace_back(fileID,rating);
 
-        /*std::cout << "Recommended Rating: " << rating << "\n";
-        std::cout << "////////" << getID <<"---------------Finish File User ID: " << dataUserMap.find(fileUser)->first << "\n";*/
+        std::cout << "Recommended Rating: " << rating << "\n";
+        std::cout << "////////" << getID << " Mov: " << getMovie <<"---------------Finish File User ID: " << dataUserMap.find(fileUser)->first << "\n";
 
     }
     //dosyayi kapatir
@@ -143,49 +146,65 @@ void dataSet::import_and_save(){
     while(fin.peek()!=EOF) {
 
         getline(fin, getUser, ',');
+        int fileUser = std::stoi(getUser);
         getline(fin, getMovie, ',');
+        int fileMovie = std::stoi(getMovie);
         getline(fin, getRating, '\n');
-
+        float fileRating = std::stof(getRating);
 
         //Black Magic
-        if(dataUserMap.count(std::stoi(getUser)) != 1 && dataMovieMap.count(std::stoi(getMovie)) != 1){
+        if(dataUserMap.count(fileUser) != 1 && dataMovieMap.count(fileMovie) != 1){
 
             userNode *node;
             node = new userNode;
             std::vector<int> *movieVector;
             movieVector = new std::vector<int>;
-            movieVector->push_back(std::stoi(getUser));
-            node->ratedMoviesMap.insert(std::pair<int,float>(std::stoi(getMovie),std::stof(getRating)));
-            dataUserMap.insert(std::pair<int,userNode*>(std::stoi(getUser),node));
-            dataMovieMap.insert(std::pair<int,std::vector<int>*>(std::stoi(getMovie),movieVector));
+            movieVector->push_back(fileUser);
+            node->ratedMoviesMap.insert(std::make_pair(fileMovie,fileRating));
+            dataUserMap.insert(std::make_pair(fileUser,node));
+            dataMovieMap.insert(std::make_pair(fileMovie,movieVector));
 
-        } else if(dataUserMap.count(std::stoi(getUser)) != 1 && dataMovieMap.count(std::stoi(getMovie)) == 1){
+        } else if(dataUserMap.count(fileUser) != 1 && dataMovieMap.count(fileMovie) == 1){
 
             userNode *node;
             node = new userNode;
-            node->ratedMoviesMap.insert(std::pair<int,float>(std::stoi(getMovie),std::stof(getRating)));
-            dataUserMap.insert(std::pair<int,userNode*>(std::stoi(getUser),node));
-            dataMovieMap.find(std::stoi(getMovie))->second->push_back(std::stoi(getUser));
+            node->ratedMoviesMap.insert(std::make_pair(fileMovie,fileRating));
+            dataUserMap.insert(std::make_pair(fileUser,node));
+            dataMovieMap.find(fileMovie)->second->push_back(fileUser);
 
-        } else if(dataUserMap.count(std::stoi(getUser)) == 1 && dataMovieMap.count(std::stoi(getMovie)) != 1){
+
+        } else if(dataUserMap.count(fileUser) == 1 && dataMovieMap.count(fileMovie) != 1){
 
             std::vector<int> *movieVector;
             movieVector = new std::vector<int>;
-            movieVector->push_back(std::stoi(getUser));
-            dataMovieMap.insert(std::pair<int,std::vector<int>*>(std::stoi(getMovie),movieVector));
-            dataUserMap.find(std::stoi(getUser))->second->ratedMoviesMap.insert(std::pair<int,float>(std::stoi(getMovie),std::stof(getRating)));
+            movieVector->push_back(fileUser);
+            dataMovieMap.insert(std::make_pair(fileMovie,movieVector));
+            dataUserMap.find(fileUser)->second->ratedMoviesMap.insert(std::make_pair(fileMovie,fileRating));
 
-        } else if (dataUserMap.count(std::stoi(getUser)) == 1 && dataMovieMap.count(std::stoi(getMovie)) == 1){
 
-            dataMovieMap.find(std::stoi(getMovie))->second->push_back(std::stoi(getUser));
-            dataUserMap.find(std::stoi(getUser))->second->ratedMoviesMap.insert(std::pair<int,float>(std::stoi(getMovie),std::stof(getRating)));
+        } else if (dataUserMap.count(fileUser) == 1 && dataMovieMap.count(fileMovie) == 1){
+
+            dataMovieMap.find(fileMovie)->second->push_back(fileUser);
+            dataUserMap.find(fileUser)->second->ratedMoviesMap.insert(std::make_pair(fileMovie,fileRating));
+
 
         }
-
-
     }
     //dosyayi kapatir
+//    calcAvgRating();
     fin.close();
+}
+
+void dataSet::calcAvgRating(){
+    std::map <int,userNode*>::const_iterator it;
+    for (it = dataUserMap.begin(); it != dataUserMap.end(); ++it){
+        std::map <int,float>::const_iterator it2;
+        double totalRating = 0.0;
+        for (it2 = it->second->ratedMoviesMap.begin(); it2 != it->second->ratedMoviesMap.end(); ++it2) {
+            totalRating += it2->second;
+        }
+        it->second->avgRating = totalRating/it->second->ratedMoviesMap.size();
+    }
 }
 
 //konsola yazdirmak bi 6-7 dk suruyor
@@ -195,6 +214,7 @@ void dataSet::printSaved(){
     for (it = dataUserMap.begin(); it != dataUserMap.end(); ++it)
     {
         std::cout << "USERID: "<< it->first <<'\n';
+        std::cout << "AVGRATING: " << it->second->avgRating << '\n';
         std::map <int,float>::const_iterator it2;
         for (it2 = it->second->ratedMoviesMap.begin(); it2 != it->second->ratedMoviesMap.end(); ++it2) {
             std::cout << "/////////////" << '\n';
@@ -294,6 +314,19 @@ void selectionSort(int arr[], int arr2[], int n)
     }
 }
 
+double cosine_similarity(std::vector<std::pair<float,float>> rating, int vectorSize)
+{
+    double dotp = 0.0;
+    double bolum_a = 0.0;
+    double bolum_b = 0.0 ;
+    for(int i = 0; i < vectorSize; ++i) {
+        dotp += rating[i].first * rating[i].second ;
+        bolum_a += rating[i].first * rating[i].first ;
+        bolum_b += rating[i].second * rating[i].second ;
+    }
+    return dotp / (sqrt(bolum_a) * sqrt(bolum_b)) ;
+}
+/*
 double cosine_similarity(std::vector<float> ratingA, std::vector<float> ratingB, int vectorSize)
 {
     double dotp = 0.0;
@@ -304,5 +337,4 @@ double cosine_similarity(std::vector<float> ratingA, std::vector<float> ratingB,
         bolum_a += ratingA[i] * ratingA[i] ;
         bolum_b += ratingB[i] * ratingB[i] ;
     }
-    return dotp / (sqrt(bolum_a) * sqrt(bolum_b)) ;
-}
+    return dotp / (sqrt(bolum_a) * sqrt(bolum_b)) ;*/

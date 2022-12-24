@@ -7,17 +7,19 @@
 #include <cmath>
 #include <algorithm>
 
-double cosine_similarity(std::vector<float> ratingA, std::vector<float> ratingB, int vectorSize);
+//double cosine_similarity(std::vector<float> ratingA, std::vector<float> ratingB, int vectorSize);
+double cosine_similarity(std::vector<std::pair<float,float>> rating, int vectorSize);
 void selectionSort(int arr[], int arr2[], int n);
 void swap(int *xp, int *yp);
 struct userNode
 {
     std::map<int,float> ratedMoviesMap;
-    double similarityIndex;
+    double avgRating;
 };
 
 class dataSet{
 public:
+    void calcAvgRating();
     void exportToFile();
     void import_test();
     void import_and_save();

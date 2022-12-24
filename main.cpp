@@ -8,7 +8,8 @@ int main() {
     start = std::chrono::system_clock::now();
     dataSet myDataSet;
     myDataSet.import_and_save();
-    myDataSet.import_test();
+    //myDataSet.printSaved();
+    //myDataSet.import_test();
     end = std::chrono::system_clock::now();
 
     std::chrono::duration<double> elapsed_seconds = end - start;
@@ -17,7 +18,7 @@ int main() {
     std::cout << "finished computation at " << std::ctime(&end_time)
               << "elapsed time: " << elapsed_seconds.count() << "s\n";
 
-    myDataSet.exportToFile();
+    //myDataSet.exportToFile();
     //myDataSet.printSaved();
     //std::cout<< myDataSet.getUniqueUserCount() << " \n";
     //std::cout<< myDataSet.getUniqueMovieCount() << " \n";
