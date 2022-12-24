@@ -19,6 +19,7 @@ struct userNode
 
 class dataSet{
 public:
+    double printAvgRating(int userID);
     void calcAvgRating();
     void exportToFile();
     void import_test();
