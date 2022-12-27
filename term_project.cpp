@@ -73,9 +73,9 @@ void dataSet::import_test(){
                         file2CandidateRatingAVGDIFF.emplace_back(it2->second - avgRating,candidateNodePtr->ratedMoviesMap.find(it2->first)->second - candidateNodePtr->avgRating);
                 }
             }
-            if(file2CandidateRatingAVGDIFF.size() > 5) {
+            if(file2CandidateRatingAVGDIFF.size() > 1) {
                 double cossim = cosine_similarity(file2CandidateRatingAVGDIFF);
-                double vscs = cossim; //* ((double) fileMovieRatings.size() / (double) dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.size());
+                double vscs = cossim * file2CandidateRatingAVGDIFF.size(); //* ((double) fileMovieRatings.size() / (double) dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.size());
                 int candidateID = dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->first;
                 /*std::cout << "File User ID: " << dataUserMap.find(fileUser)->first << ", "
                           << "Candidate ID: " << candidateID << ", Similarity: " << cossim
@@ -318,15 +318,11 @@ double cosine_similarity(const std::vector<std::pair<float, float>> &rating)
     }
     return dotp / (sqrt(bolum_a) * sqrt(bolum_b)) ;
 }
-/*
-double cosine_similarity(std::vector<float> ratingA, std::vector<float> ratingB, int vectorSize)
-{
-    double dotp = 0.0;
-    double bolum_a = 0.0;
-    double bolum_b = 0.0 ;
-    for(int i = 0; i < vectorSize; ++i) {
-        dotp += ratingA[i] * ratingB[i] ;
-        bolum_a += ratingA[i] * ratingA[i] ;
-        bolum_b += ratingB[i] * ratingB[i] ;
+
+double euclidian_distance(const std::vector<std::pair<float, float>> &rating) {
+    double addition = 0.0;
+    for (auto &i: rating) {
+        addition += (i.first - i.second) * (i.first - i.second);
     }
-    return dotp / (sqrt(bolum_a) * sqrt(bolum_b)) ;*/
+    return sqrt(addition);
+}
