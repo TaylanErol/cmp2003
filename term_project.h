@@ -8,8 +8,8 @@
 
 double euclidian_distance(const std::vector<std::pair<float, float>> &rating);
 double cosine_similarity(const std::vector<std::pair<float, float>> &rating);
-void selectionSort(int arr[], int arr2[], int n);
-void swap(int *xp, int *yp);
+void selectionSort(int x[], int y[], int n);
+void swap(int* ap, int* bp);
 struct userNode
 {
     std::unordered_map<int,float> ratedMoviesMap;

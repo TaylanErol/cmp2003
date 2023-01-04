@@ -255,49 +255,32 @@ int dataSet::getUniqueUserCount() {
 int dataSet::getUniqueMovieCount() {
     return dataMovieMap.size();
 }
-//WIP
-/*void dataSet::calcSimilarityIndex() {
-    std::map <int,userNode*>::const_iterator it;
-    for (it = dataUserMap.begin(); it != dataUserMap.end(); ++it)
-    {
-        it->second->similarityIndex = cosine_similarity(it->second->ratedMovies,it->second->ratings,it->second->ratedMovies.size());
-        //std::cout << "USERID: "<< it->first << " SimilarityWeight: "<< it->second->similarityIndex << "\n";
-    }
-}*/
 
-//TAKEN FROM GEEKS FOR GEEKS
-void swap(int *xp, int *yp)
+void swap(int* ap, int* bp)
 {
-    int temp = *xp;
-    *xp = *yp;
-    *yp = temp;
+    int temp = *ap;
+    *ap = *bp;
+    *bp = temp;
 }
 
-//TAKEN FROM GEEKS FOR GEEKS
-void selectionSort(int arr[], int arr2[], int n)
+void selectionSort(int x[], int y[], int n)
 {
-    int i, j, min_idx;
+    int min;
 
-    // One by one move boundary of
-    // unsorted subarray
-    for (i = 0; i < n-1; i++)
+    for (int i = 0; i < n - 1; i++)
     {
+        min = i;
+        for (int j = i + 1; j < n; j++)
+            if (x[j] < x[min])
+                min = j;
 
-        // Find the minimum element in
-        // unsorted array
-        min_idx = i;
-        for (j = i+1; j < n; j++)
-            if (arr[j] < arr[min_idx])
-                min_idx = j;
-
-        // Swap the found minimum element
-        // with the first element
-        if(min_idx!=i) {
-            swap(&arr[min_idx], &arr[i]);
-            swap(&arr2[min_idx], &arr2[i]);
+        if (min != i) {
+            swap(&x[min], &x[i]);
+            swap(&y[min], &y[i]);
         }
     }
 }
+
 
 double dataSet::printAvgRating(int userID) {
 
