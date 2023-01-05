@@ -18,7 +18,13 @@ void dataSet::exportToFile() {
     fout.open("submission.csv");
     fout << "ID,Predicted\n";
     for (auto & i : exportData) {
-        fout << i.first << "," << i.second << "\n";
+        if(std::isnan(i.second)){
+            std::cout << "Warning nan detected at ID: " << i.first << "!\n";
+            fout << i.first << "," << 3.0 << "\n";
+        }
+        else {
+            fout << i.first << "," << i.second << "\n";
+        }
     }
 
 }
@@ -73,7 +79,7 @@ void dataSet::import_test(){
                         file2CandidateRatingAVGDIFF.emplace_back(it2->second - avgRating,candidateNodePtr->ratedMoviesMap.find(it2->first)->second - candidateNodePtr->avgRating);
                 }
             }
-            if(file2CandidateRatingAVGDIFF.size() > 1) {
+            if(file2CandidateRatingAVGDIFF.size() > 2) {
                 double cossim = cosine_similarity(file2CandidateRatingAVGDIFF);
                 double vscs = cossim * file2CandidateRatingAVGDIFF.size(); //* ((double) fileMovieRatings.size() / (double) dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.size());
                 int candidateID = dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->first;
