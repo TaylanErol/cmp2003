@@ -1,7 +1,5 @@
 #include "term_project.h"
 
-
-
 void dataSet::setFileName(){
     std::cout << "Dosya adi girin: " << "\n";
     std::cin >> fileName;
@@ -9,11 +7,9 @@ void dataSet::setFileName(){
 
 dataSet::dataSet() {
     fileName = "";
-
 }
 
 void dataSet::exportToFile() {
-
     std::ofstream fout;
     fout.open("submission.csv");
     fout << "ID,Predicted\n";
@@ -26,31 +22,21 @@ void dataSet::exportToFile() {
             fout << i.first << "," << i.second << "\n";
         }
     }
-
 }
 
 void dataSet::import_test(){
-    //bu fonksiyon import file ile benzerlik gostermektedir ancak icindekileri yazdirmak yerine kaydeder
-    // file pointer
     std::ifstream fin;
-    // !!!daha guzel bir cozum bulunabilir!!! dosyanin basindaki UserID,ItemID gibi gelen aciklamalardan kurtulmak icin
     std::string firstCellPurge;
-
-    //1. 2. 3. hucredeki verileri icine alacak
     std::string getID;
     std::string getUser;
     std::string getMovie;
+
     this->setFileName();
-    // verilen dosyayi ac
+
     fin.open(fileName);
-
-    // dosya aciliyormu kontrol etmek icin
     if(!fin.is_open()) std::cout << "ERROR: File couldn't be opened!" << '\n';
-
-    //dosyanin basindaki ilk satiri cope at
     getline(fin,firstCellPurge,'\n');
 
-    //dosya sonuna kadar devam eder
     while(fin.peek()!=EOF) {
 
         getline(fin, getID, ',');
@@ -59,17 +45,21 @@ void dataSet::import_test(){
         int fileUser = std::stoi(getUser);
         getline(fin, getMovie, '\n');
         int fileMovie = std::stoi(getMovie);
+
         std::unordered_map<int,float>::const_iterator it2;
+
         double avgRating = dataUserMap.find(fileUser)->second->avgRating;
         auto it2begin = dataUserMap.find(fileUser)->second->ratedMoviesMap.begin();
         auto it2end = dataUserMap.find(fileUser)->second->ratedMoviesMap.end();
         int vectorSize = dataMovieMap.find(fileMovie)->second->size();
         std::vector<std::pair<double,int>> vscsAndCandidateID;
+
         for (int i = 0; i < vectorSize; ++i) {
             userNode *candidateNodePtr = dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second;
             std::vector<std::pair<float,float>> file2CandidateRatingAVGDIFF;
             for (it2 = it2begin; it2 != it2end; ++it2) {
                     if (candidateNodePtr->ratedMoviesMap.count(it2->first) == 1){
+                        //For debugging
                         /*std::cout << "Candidate ID: " << dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->first
                                   << " CandidateMovie: " << dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.find(it2->first)->first
                                   << " Candidate Rating: " << dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.find(it2->first)->second << "\n";
@@ -79,61 +69,54 @@ void dataSet::import_test(){
                         file2CandidateRatingAVGDIFF.emplace_back(it2->second - avgRating,candidateNodePtr->ratedMoviesMap.find(it2->first)->second - candidateNodePtr->avgRating);
                 }
             }
-            if(file2CandidateRatingAVGDIFF.size() > 2) {
+
+            if(file2CandidateRatingAVGDIFF.size() > 3) {
                 double cossim = cosine_similarity(file2CandidateRatingAVGDIFF);
                 double vscs = cossim * file2CandidateRatingAVGDIFF.size(); //* ((double) fileMovieRatings.size() / (double) dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->second->ratedMoviesMap.size());
                 int candidateID = dataUserMap.find(dataMovieMap.find(fileMovie)->second->at(i))->first;
                 /*std::cout << "File User ID: " << dataUserMap.find(fileUser)->first << ", "
                           << "Candidate ID: " << candidateID << ", Similarity: " << cossim
                           << " Vector Size: " << file2CandidateRatingAVGDIFF.size() << ", vs*cs: " << vscs << "\n";*/
-                vscsAndCandidateID.emplace_back(vscs,candidateID); //Compiler emplace_back onerdi neden bilmiyorum ama daha hos duruyo :P
+                vscsAndCandidateID.emplace_back(vscs,candidateID);
             }
         }
 
         double denominator = 0.0;
         double numerator = 0.0;
+
         for (auto & i : vscsAndCandidateID) {
             if (!std::isnan(i.first)) {
                 numerator += i.first * (dataUserMap.find(i.second)->second->ratedMoviesMap.find(fileMovie)->second - dataUserMap.find(i.second)->second->avgRating);
                 denominator += fabs(i.first);
+                //For debugging
                 //std::cout << vscsAndCandidateID[i].first << " "<< vscsAndCandidateID[i].second << " r: " << dataUserMap.find(vscsAndCandidateID[i].second)->second->ratedMoviesMap.find(fileMovie)->second << std::endl;
             }
         }
+
         double rating = dataUserMap.find(fileUser)->second->avgRating + (numerator/denominator);
         exportData.emplace_back(fileID,rating);
 
         std::cout << "Recommended Rating: " << rating << " fileUserAvgRaating: " << dataUserMap.find(fileUser)->second->avgRating << " cossimEffect: " << numerator/denominator <<"\n";
         std::cout << "////////" << getID << " Mov: " << getMovie <<"---------------Finish File User ID: " << dataUserMap.find(fileUser)->first << "\n";
-
     }
-    //dosyayi kapatir
     fin.close();
 }
 
 
-//kaydetmek dusundugumden hizli calisiyor mutluyum :))
 void dataSet::import_and_save(){
-    //bu fonksiyon import file ile benzerlik gostermektedir ancak icindekileri yazdirmak yerine kaydeder
-    // file pointer
     std::ifstream fin;
-    // !!!daha guzel bir cozum bulunabilir!!! dosyanin basindaki UserID,ItemID gibi gelen aciklamalardan kurtulmak icin
     std::string firstCellPurge;
-
-    //1. 2. 3. hucredeki verileri icine alacak
     std::string getUser;
     std::string getMovie;
     std::string getRating;
     this->setFileName();
-    // verilen dosyayi ac
+
     fin.open(fileName);
 
-    // dosya aciliyormu kontrol etmek icin
     if(!fin.is_open()) std::cout << "ERROR: File couldn't be opened!" << '\n';
 
-    //dosyanin basindaki ilk satiri cope at
     getline(fin,firstCellPurge,'\n');
 
-    //dosya sonuna kadar devam eder
     while(fin.peek()!=EOF) {
 
         getline(fin, getUser, ',');
@@ -143,7 +126,6 @@ void dataSet::import_and_save(){
         getline(fin, getRating, '\n');
         float fileRating = std::stof(getRating);
 
-        //Black Magic
         if(dataUserMap.count(fileUser) != 1 && dataMovieMap.count(fileMovie) != 1){
 
             userNode *node;
@@ -181,12 +163,12 @@ void dataSet::import_and_save(){
 
         }
     }
-    //dosyayi kapatir
     calcAvgRating();
     fin.close();
 }
 
 void dataSet::calcAvgRating(){
+
     std::unordered_map<int,userNode*>::const_iterator it;
     for (it = dataUserMap.begin(); it != dataUserMap.end(); ++it){
         std::unordered_map<int,float>::const_iterator it2;
@@ -198,7 +180,6 @@ void dataSet::calcAvgRating(){
     }
 }
 
-//konsola yazdirmak bi 6-7 dk suruyor
 void dataSet::printSaved(){
     std::cout << "~~~~~~~~~~~~~~~~" << '\n';
     std::unordered_map<int,userNode*>::const_iterator it;
@@ -303,15 +284,16 @@ double cosine_similarity(const std::vector<std::pair<float, float>> &rating)
         dotp += i.first * i.second ;
         bolum_a += i.first * i.first ;
         bolum_b += i.second * i.second ;
+        //For debugging
         //std::cout << "dotp: " <<dotp << " bolum_a: " << bolum_a<< " bolum_b: " << bolum_b << "\n";
     }
     return dotp / (sqrt(bolum_a) * sqrt(bolum_b)) ;
 }
 
 double euclidian_distance(const std::vector<std::pair<float, float>> &rating) {
-    double addition = 0.0;
+    double toplam = 0.0;
     for (auto &i: rating) {
-        addition += (i.first - i.second) * (i.first - i.second);
+        toplam += (i.first - i.second) * (i.first - i.second);
     }
-    return sqrt(addition);
+    return sqrt(toplam);
 }
